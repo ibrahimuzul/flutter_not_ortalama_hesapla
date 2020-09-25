@@ -1,7 +1,21 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 
-void main() => runApp(MyApp());
+import 'package:flutter/services.dart';
+
+void main() {
+
+/*
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
+      .then((_) {
+    runApp(new MyApp());
+  });
+*/
+
+  //SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
   @override
@@ -63,143 +77,158 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  Widget WidgetInputForm()
+  {
+    return Container(
+      padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
+      //color: Colors.pink.shade200,
+      child: Form(
+        key: formKey,
+        child: Column(
+          children: <Widget>[
+            TextFormField(
+              decoration: InputDecoration(
+                labelText: "Ders Adı",
+                hintText: "Ders adını giriniz",
+                hintStyle: TextStyle(fontSize: 18),
+                labelStyle: TextStyle(fontSize: 22),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.purple, width: 2),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.purple, width: 2),
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(10),
+                  ),
+                ),
+              ),
+              validator: (girilenDeger) {
+                if (girilenDeger.length > 0) {
+                  return null;
+                } else
+                  return "Ders adı boş olamaz";
+              },
+              onSaved: (kaydedilecekDeger) {
+                dersAdi = kaydedilecekDeger;
+                setState(() {
+                  tumDersler.add(Ders(dersAdi, dersHarfDegeri, dersKredi,
+                      rastgeleRenkOlustur()));
+                  ortalama = 0;
+                  ortalamayiHesapla();
+                });
+              },
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Container(
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<int>(
+                      items: dersKredileriItems(),
+                      value: dersKredi,
+                      onChanged: (secilenKredi) {
+                        setState(() {
+                          dersKredi = secilenKredi;
+                        });
+                      },
+                    ),
+                  ),
+                  padding:
+                  EdgeInsets.symmetric(horizontal: 15, vertical: 4),
+                  margin: EdgeInsets.only(top: 10),
+                  decoration: BoxDecoration(
+                      border: Border.all(color: Colors.purple, width: 2),
+                      borderRadius:
+                      BorderRadius.all(Radius.circular(10))),
+                ),
+                Container(
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<double>(
+                      items: dersHarfDegerleriItems(),
+                      value: dersHarfDegeri,
+                      onChanged: (secilenHarf) {
+                        setState(() {
+                          dersHarfDegeri = secilenHarf;
+                        });
+                      },
+                    ),
+                  ),
+                  padding:
+                  EdgeInsets.symmetric(horizontal: 15, vertical: 4),
+                  margin: EdgeInsets.only(top: 10),
+                  decoration: BoxDecoration(
+                      border: Border.all(color: Colors.purple, width: 2),
+                      borderRadius:
+                      BorderRadius.all(Radius.circular(10))),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget WidgetResult()
+  {
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 10),
+      height: 70,
+      decoration: BoxDecoration(
+          color: Colors.blue,
+          border: BorderDirectional(
+            top: BorderSide(color: Colors.blue, width: 2),
+            bottom: BorderSide(color: Colors.blue, width: 2),
+          )),
+      child: Center(
+        child: RichText(
+          textAlign: TextAlign.center,
+          text: TextSpan(
+            children: [
+              TextSpan(
+                  text: tumDersler.length == 0
+                      ? " Lütfen ders ekleyin "
+                      : "Ortalama : ",
+                  style: TextStyle(fontSize: 30, color: Colors.white)),
+              TextSpan(
+                  text: tumDersler.length == 0
+                      ? ""
+                      : "${ortalama.toStringAsFixed(2)}",
+                  style: TextStyle(
+                      fontSize: 40,
+                      color: Colors.purple,
+                      fontWeight: FontWeight.bold)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget WidgetNotList()
+  {
+    return Expanded(
+        child: Container(
+            child: ListView.builder(
+              itemBuilder: _listeElemanlariniOlustur,
+              itemCount: tumDersler.length,
+            )));
+  }
+
   Widget uygulamaGovdesi() {
     return Container(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           //STATIC FORMU TUTAN CONTAINER
-          Container(
-            padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
-            //color: Colors.pink.shade200,
-            child: Form(
-              key: formKey,
-              child: Column(
-                children: <Widget>[
-                  TextFormField(
-                    decoration: InputDecoration(
-                      labelText: "Ders Adı",
-                      hintText: "Ders adını giriniz",
-                      hintStyle: TextStyle(fontSize: 18),
-                      labelStyle: TextStyle(fontSize: 22),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.purple, width: 2),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.purple, width: 2),
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(10),
-                        ),
-                      ),
-                    ),
-                    validator: (girilenDeger) {
-                      if (girilenDeger.length > 0) {
-                        return null;
-                      } else
-                        return "Ders adı boş olamaz";
-                    },
-                    onSaved: (kaydedilecekDeger) {
-                      dersAdi = kaydedilecekDeger;
-                      setState(() {
-                        tumDersler.add(Ders(dersAdi, dersHarfDegeri, dersKredi,
-                            rastgeleRenkOlustur()));
-                        ortalama = 0;
-                        ortalamayiHesapla();
-                      });
-                    },
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Container(
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<int>(
-                            items: dersKredileriItems(),
-                            value: dersKredi,
-                            onChanged: (secilenKredi) {
-                              setState(() {
-                                dersKredi = secilenKredi;
-                              });
-                            },
-                          ),
-                        ),
-                        padding:
-                        EdgeInsets.symmetric(horizontal: 15, vertical: 4),
-                        margin: EdgeInsets.only(top: 10),
-                        decoration: BoxDecoration(
-                            border: Border.all(color: Colors.purple, width: 2),
-                            borderRadius:
-                            BorderRadius.all(Radius.circular(10))),
-                      ),
-                      Container(
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<double>(
-                            items: dersHarfDegerleriItems(),
-                            value: dersHarfDegeri,
-                            onChanged: (secilenHarf) {
-                              setState(() {
-                                dersHarfDegeri = secilenHarf;
-                              });
-                            },
-                          ),
-                        ),
-                        padding:
-                        EdgeInsets.symmetric(horizontal: 15, vertical: 4),
-                        margin: EdgeInsets.only(top: 10),
-                        decoration: BoxDecoration(
-                            border: Border.all(color: Colors.purple, width: 2),
-                            borderRadius:
-                            BorderRadius.all(Radius.circular(10))),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
+          WidgetInputForm(),
 
-          Container(
-            margin: EdgeInsets.symmetric(vertical: 10),
-            height: 70,
-            decoration: BoxDecoration(
-                color: Colors.blue,
-                border: BorderDirectional(
-                  top: BorderSide(color: Colors.blue, width: 2),
-                  bottom: BorderSide(color: Colors.blue, width: 2),
-                )),
-            child: Center(
-              child: RichText(
-                textAlign: TextAlign.center,
-                text: TextSpan(
-                  children: [
-                    TextSpan(
-                        text: tumDersler.length == 0
-                            ? " Lütfen ders ekleyin "
-                            : "Ortalama : ",
-                        style: TextStyle(fontSize: 30, color: Colors.white)),
-                    TextSpan(
-                        text: tumDersler.length == 0
-                            ? ""
-                            : "${ortalama.toStringAsFixed(2)}",
-                        style: TextStyle(
-                            fontSize: 40,
-                            color: Colors.purple,
-                            fontWeight: FontWeight.bold)),
-                  ],
-                ),
-              ),
-            ),
-          ),
+          WidgetResult(),
 
           //DINAMIK LISTE TUTAN CONTAINER
-          Expanded(
-              child: Container(
-                  child: ListView.builder(
-                    itemBuilder: _listeElemanlariniOlustur,
-                    itemCount: tumDersler.length,
-                  ))),
+          WidgetNotList(),
         ],
       ),
     );
@@ -213,146 +242,15 @@ class _MyHomePageState extends State<MyHomePage> {
             Expanded(
               child: Column(
                 children: <Widget>[
-                  Container(
-                    padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
-                    //color: Colors.pink.shade200,
-                    child: Form(
-                      key: formKey,
-                      child: Column(
-                        children: <Widget>[
-                          TextFormField(
-                            decoration: InputDecoration(
-                              labelText: "Ders Adı",
-                              hintText: "Ders adını giriniz",
-                              hintStyle: TextStyle(fontSize: 18),
-                              labelStyle: TextStyle(fontSize: 22),
-                              enabledBorder: OutlineInputBorder(
-                                borderSide:
-                                BorderSide(color: Colors.purple, width: 2),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide:
-                                BorderSide(color: Colors.purple, width: 2),
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(10),
-                                ),
-                              ),
-                            ),
-                            validator: (girilenDeger) {
-                              if (girilenDeger.length > 0) {
-                                return null;
-                              } else
-                                return "Ders adı boş olamaz";
-                            },
-                            onSaved: (kaydedilecekDeger) {
-                              dersAdi = kaydedilecekDeger;
-                              setState(() {
-                                tumDersler.add(Ders(dersAdi, dersHarfDegeri,
-                                    dersKredi, rastgeleRenkOlustur()));
-                                ortalama = 0;
-                                ortalamayiHesapla();
-                              });
-                            },
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: <Widget>[
-                              Container(
-                                child: DropdownButtonHideUnderline(
-                                  child: DropdownButton<int>(
-                                    items: dersKredileriItems(),
-                                    value: dersKredi,
-                                    onChanged: (secilenKredi) {
-                                      setState(() {
-                                        dersKredi = secilenKredi;
-                                      });
-                                    },
-                                  ),
-                                ),
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 15, vertical: 4),
-                                margin: EdgeInsets.only(top: 10),
-                                decoration: BoxDecoration(
-                                    border:
-                                    Border.all(color: Colors.purple, width: 2),
-                                    borderRadius:
-                                    BorderRadius.all(Radius.circular(10))),
-                              ),
-                              Container(
-                                child: DropdownButtonHideUnderline(
-                                  child: DropdownButton<double>(
-                                    items: dersHarfDegerleriItems(),
-                                    value: dersHarfDegeri,
-                                    onChanged: (secilenHarf) {
-                                      setState(() {
-                                        dersHarfDegeri = secilenHarf;
-                                      });
-                                    },
-                                  ),
-                                ),
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 15, vertical: 4),
-                                margin: EdgeInsets.only(top: 10),
-                                decoration: BoxDecoration(
-                                    border:
-                                    Border.all(color: Colors.purple, width: 2),
-                                    borderRadius:
-                                    BorderRadius.all(Radius.circular(10))),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                  WidgetInputForm(),
                   Expanded(
-                    child: Container(
-                      margin: EdgeInsets.all(5),
-                      decoration: BoxDecoration(
-                          color: Colors.blue,
-                          border: BorderDirectional(
-                            top: BorderSide(color: Colors.blue, width: 2),
-                            bottom: BorderSide(color: Colors.blue, width: 2),
-                          )),
-                      child: Center(
-                        child: RichText(
-                          textAlign: TextAlign.center,
-                          text: TextSpan(
-                            children: [
-                              TextSpan(
-                                  text: tumDersler.length == 0
-                                      ? " Lütfen ders ekleyin "
-                                      : "Ortalama : ",
-                                  style:
-                                  TextStyle(fontSize: 30, color: Colors.white)),
-                              TextSpan(
-                                  text: tumDersler.length == 0
-                                      ? ""
-                                      : "${ortalama.toStringAsFixed(2)}",
-                                  style: TextStyle(
-                                      fontSize: 40,
-                                      color: Colors.purple,
-                                      fontWeight: FontWeight.bold)),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
+                    child: WidgetResult(),
                   ),
                 ],
               ),
               flex: 1,
             ),
-            Expanded(
-              child: Container(
-                child: ListView.builder(
-                  itemBuilder: _listeElemanlariniOlustur,
-                  itemCount: tumDersler.length,
-                ),
-              ),
-            ),
+            WidgetNotList(),
           ],
         ));
   }
